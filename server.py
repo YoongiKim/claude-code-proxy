@@ -222,7 +222,7 @@ class MessagesRequest(BaseModel):
 
         # Map Haiku to SMALL_MODEL based on provider preference
         elif 'haiku' in clean_v.lower():
-            if PREFERRED_PROVIDER == "google" and SMALL_MODEL in GEMINI_MODELS:
+            if PREFERRED_PROVIDER == "google" and (SMALL_MODEL in GEMINI_MODELS or 'gemini' in SMALL_MODEL.lower()):
                 new_model = f"gemini/{SMALL_MODEL}"
                 mapped = True
             else:
@@ -231,7 +231,7 @@ class MessagesRequest(BaseModel):
 
         # Map Sonnet to BIG_MODEL based on provider preference
         elif 'sonnet' in clean_v.lower():
-            if PREFERRED_PROVIDER == "google" and BIG_MODEL in GEMINI_MODELS:
+            if PREFERRED_PROVIDER == "google" and (BIG_MODEL in GEMINI_MODELS or 'gemini' in BIG_MODEL.lower()):
                 new_model = f"gemini/{BIG_MODEL}"
                 mapped = True
             else:
@@ -240,7 +240,7 @@ class MessagesRequest(BaseModel):
 
         # Add prefixes to non-mapped models if they match known lists
         elif not mapped:
-            if clean_v in GEMINI_MODELS and not v.startswith('gemini/'):
+            if (clean_v in GEMINI_MODELS or 'gemini' in clean_v.lower()) and not v.startswith('gemini/'):
                 new_model = f"gemini/{clean_v}"
                 mapped = True # Technically mapped to add prefix
             elif clean_v in OPENAI_MODELS and not v.startswith('openai/'):
@@ -295,7 +295,7 @@ class TokenCountRequest(BaseModel):
         mapped = False
         # Map Haiku to SMALL_MODEL based on provider preference
         if 'haiku' in clean_v.lower():
-            if PREFERRED_PROVIDER == "google" and SMALL_MODEL in GEMINI_MODELS:
+            if PREFERRED_PROVIDER == "google" and (SMALL_MODEL in GEMINI_MODELS or 'gemini' in SMALL_MODEL.lower()):
                 new_model = f"gemini/{SMALL_MODEL}"
                 mapped = True
             else:
@@ -304,7 +304,7 @@ class TokenCountRequest(BaseModel):
 
         # Map Sonnet to BIG_MODEL based on provider preference
         elif 'sonnet' in clean_v.lower():
-            if PREFERRED_PROVIDER == "google" and BIG_MODEL in GEMINI_MODELS:
+            if PREFERRED_PROVIDER == "google" and (BIG_MODEL in GEMINI_MODELS or 'gemini' in BIG_MODEL.lower()):
                 new_model = f"gemini/{BIG_MODEL}"
                 mapped = True
             else:
@@ -313,7 +313,7 @@ class TokenCountRequest(BaseModel):
 
         # Add prefixes to non-mapped models if they match known lists
         elif not mapped:
-            if clean_v in GEMINI_MODELS and not v.startswith('gemini/'):
+            if (clean_v in GEMINI_MODELS or 'gemini' in clean_v.lower()) and not v.startswith('gemini/'):
                 new_model = f"gemini/{clean_v}"
                 mapped = True # Technically mapped to add prefix
             elif clean_v in OPENAI_MODELS and not v.startswith('openai/'):
