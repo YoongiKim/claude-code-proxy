@@ -95,6 +95,13 @@ OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL")
 # Get preferred provider (default to openai)
 PREFERRED_PROVIDER = os.environ.get("PREFERRED_PROVIDER", "openai").lower()
 
+# Security: Secret key required for incoming requests if set
+PROXY_SECRET_KEY = os.environ.get("PROXY_SECRET_KEY")
+if PROXY_SECRET_KEY:
+    logger.info("🔐 Security: Proxy is protected by PROXY_SECRET_KEY")
+else:
+    logger.warning("🔓 Security: Proxy is running WITHOUT authentication. Use only in local network.")
+
 # Get model mapping configuration from environment
 # Default to latest OpenAI models if not set
 BIG_MODEL = os.environ.get("BIG_MODEL", "gpt-4.1")
@@ -355,17 +362,31 @@ class MessagesResponse(BaseModel):
     usage: Usage
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
-    # Get request details
+async def auth_and_log_middleware(request: Request, call_next):
+    # 1. Authentication Check
+    if PROXY_SECRET_KEY:
+        # Check both X-Api-Key and Authorization header (as Bearer)
+        auth_header = request.headers.get("x-api-key")
+        
+        # Fallback to Authorization header if X-Api-Key is missing
+        if not auth_header:
+            bearer_token = request.headers.get("authorization", "")
+            if bearer_token.startswith("Bearer "):
+                auth_header = bearer_token[7:]
+        
+        if not auth_header or auth_header != PROXY_SECRET_KEY:
+            logger.warning(f"🚫 Unauthorized access attempt from {request.client.host}")
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Unauthorized: Invalid or missing API Key. Set X-Api-Key header."}
+            )
+    
+    # 2. Logging (Original functionality)
     method = request.method
     path = request.url.path
-    
-    # Log only basic request details at debug level
     logger.debug(f"Request: {method} {path}")
     
-    # Process the request and get the response
     response = await call_next(request)
-    
     return response
 
 # Not using validation function as we're using the environment API key
