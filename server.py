@@ -20,7 +20,7 @@ load_dotenv()
 
 # Configure logging
 logging.basicConfig(
-    level=logging.WARN,  # Change to INFO level to show more details
+    level=logging.INFO,  # Set to INFO to show message logs
     format='%(asctime)s - %(levelname)s - %(message)s',
 )
 logger = logging.getLogger(__name__)
