@@ -1119,26 +1119,20 @@ async def create_message(
     raw_request: Request
 ):
     try:
-        # print the body here
-        body = await raw_request.body()
-    
-        # Parse the raw body as JSON since it's bytes
-        body_json = json.loads(body.decode('utf-8'))
-        original_model = body_json.get("model", "unknown")
+        logger.info(f"📊 PROCESSING REQUEST: Model={request.model}, Stream={request.stream}")
         
-        # Get the display name for logging, just the model name without provider prefix
-        display_model = original_model
-        if "/" in display_model:
-            display_model = display_model.split("/")[-1]
-        
-        # Clean model name for capability check
-        clean_model = request.model
-        if clean_model.startswith("anthropic/"):
-            clean_model = clean_model[len("anthropic/"):]
-        elif clean_model.startswith("openai/"):
-            clean_model = clean_model[len("openai/"):]
-        
-        logger.debug(f"📊 PROCESSING REQUEST: Model={request.model}, Stream={request.stream}")
+        # Detailed Message Logging
+        if request.system:
+            logger.info(f"🧠 [System Prompt]: {request.system}")
+            
+        for i, msg in enumerate(request.messages):
+            role_emoji = "👤" if msg.role == "user" else "🤖"
+            content_preview = str(msg.content)[:200] + "..." if len(str(msg.content)) > 200 else str(msg.content)
+            logger.info(f"{role_emoji} [{msg.role} {i}]: {content_preview}")
+            
+        if request.tools:
+            tool_names = [t.name for t in request.tools]
+            logger.info(f"🛠️ [Tools Available]: {', '.join(tool_names)}")
         
         # Convert Anthropic request to LiteLLM format
         litellm_request = convert_anthropic_to_litellm(request)
