@@ -1119,6 +1119,19 @@ async def create_message(
     raw_request: Request
 ):
     try:
+        # Get the original model name from the raw request body if possible
+        body = await raw_request.body()
+        try:
+            body_json = json.loads(body.decode('utf-8'))
+            original_model = body_json.get("model", "unknown")
+        except:
+            original_model = request.model
+
+        # Get the display name for logging, just the model name without provider prefix
+        display_model = original_model
+        if "/" in display_model:
+            display_model = display_model.split("/")[-1]
+
         logger.info(f"📊 PROCESSING REQUEST: Model={request.model}, Stream={request.stream}")
         
         # Detailed Message Logging
