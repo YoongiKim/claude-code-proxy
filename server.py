@@ -1127,8 +1127,7 @@ async def create_message(
             
         for i, msg in enumerate(request.messages):
             role_emoji = "👤" if msg.role == "user" else "🤖"
-            content_preview = str(msg.content)[:200] + "..." if len(str(msg.content)) > 200 else str(msg.content)
-            logger.info(f"{role_emoji} [{msg.role} {i}]: {content_preview}")
+            logger.info(f"{role_emoji} [{msg.role} {i}]: {msg.content}")
             
         if request.tools:
             tool_names = [t.name for t in request.tools]
